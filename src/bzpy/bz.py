@@ -1,6 +1,9 @@
 from __future__ import annotations
+import zipfile
+from typing import *
 import subprocess
 import re
+import os
 
 
 class ArchiveFile:
@@ -30,6 +33,22 @@ class ArchiveFile:
                              stdout=subprocess.PIPE, text=True)
         stdout, stderr = p.communicate()
         return stdout.splitlines()
+
+    def extractall(self, path: str,
+                   members: list[str | EntryInfo] = [],
+                   pwd: Optional[bytes] = None) -> Generator[str]:
+        """Extract all members from the archive."""
+        cmd = (f"bz x -y -o:\"{path}\" {self.path} "
+            + " ".join('"' + (member if isinstance(member, str) else member.filename) + '"'
+                       for member in members)
+            + (pwd.decode() if pwd is not None else ""))
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             text=True, bufsize=1, shell=False, cwd=os.getcwd())
+        for i, line in enumerate(p.stdout):
+            print(line)
+            if i < 2:
+                continue
+            yield line.strip()
 
 
 class EntryInfo:
