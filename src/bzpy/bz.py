@@ -34,6 +34,11 @@ class ArchiveFile:
         stdout, stderr = p.communicate()
         return stdout.splitlines()
 
+    def extract(self, member: str | EntryInfo,
+                path: str=os.getcwd(), pwd: Optional[bytes]=None):
+        """Extract a member from the archive."""
+        self.extractall(path, [member], pwd)
+
     def extractall(self, path: str,
                    members: list[str | EntryInfo] = [],
                    pwd: Optional[bytes] = None) -> Generator[str]:
